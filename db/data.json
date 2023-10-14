@@ -1,0 +1,18 @@
+[
+    {
+        "name": "Namn1",
+        "content": "<div><!--block-->cont 1</div>"
+    },
+    {
+        "name": "Namn2",
+        "content": "<div><!--block-->cont 2</div>"
+    },
+    {
+        "name": "Namn3",
+        "content": "<div><!--block-->cont 3</div>"
+    },
+    {
+        "name": "Namn4",
+        "content": "<div><!--block-->cont 4</div>"
+    }
+]
