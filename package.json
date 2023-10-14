@@ -1,6 +1,6 @@
 {
   "name": "jsramverk-backend",
-  "version": "",
+  "version": "1.0.0",
   "description": "Backend for jsramverk editor",
   "main": "index.js",
   "scripts": {
