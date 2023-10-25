@@ -47,7 +47,7 @@ Starts the server in production mode.
     
     Returns no data. Logs success in console.
 
-#### DELETE "/:id"
+#### DELETE "/docs/:id"
     Route param: _id of target document.
     
     Returns no data

@@ -23,9 +23,9 @@ app.use(express.json());
 
 // ─── Routes And Port Connection ─────────────────────
 
-app.get("/", (req, res) => res.json({message: "JS-Editor docs API"}));
+app.get("/", (req, res) => res.redirect("/docs"));
 
-app.use('/docs', routeDocs);
+app.use("/docs", routeDocs);
 
 const server = app.listen(port, middleware.logStartUpInfo(port));
 
