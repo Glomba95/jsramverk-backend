@@ -6,7 +6,7 @@
 "use strict";
 
 const   ObjectId      = require("mongodb").ObjectId;
-const   database      = require("../db/docs.js");
+const   database      = require("../db/database.js");
 let     db;
 
 
@@ -25,7 +25,7 @@ async function execute(action, data=null) {
                 result = await createDoc(data);
                 return result;
             case 'update':
-                await updateDoc(data);
+                await updateDoc(data[0], data[1]);
                 break;
             case 'delete':
                 await deleteDoc(data);
@@ -48,29 +48,21 @@ async function readDocs() {
 }
 
 
-// ─── Get One ──────────────────────────────────────────────────────
-
-async function getDoc(id) {
-    const res = await db.collection.find({_id: id }).toArray();
-    
-    return res[0]; 
-}
-
-
 // ─── Create ───────────────────────────────────────────────────────
 
 async function createDoc(document) {
     const res = await db.collection.insertOne(document);
     
-    const finalRes = await getDoc(res.insertedId);
-    
-    return finalRes; 
+    return {
+        ...document,
+        _id: res.insertedId,
+    };
 }
 
 
 // ─── Update ───────────────────────────────────────────────────────
 
-async function updateDoc(doc) {
+async function updateDoc(id, doc) {
     let data = {};
     
     if (doc.name) {
@@ -81,7 +73,7 @@ async function updateDoc(doc) {
     }
 
     const res = await db.collection.updateOne(
-        { _id: new ObjectId(doc._id) }, 
+        { _id: new ObjectId(id) }, 
         { $set: data }
     );
     

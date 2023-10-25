@@ -41,10 +41,12 @@ router.post("/", async (req, res) => {
 
 // PUT ─── Update ─────────────────────────────────────────
 
-router.put("/", async (req, res) => {
+router.put("/:id", async (req, res) => {
     try {
-        const document = req.body;  
-        await docs.execute('update', document);
+        const id = req.params.id;
+        const document = req.body;
+
+        await docs.execute('update', [id, document]);
 
         res.status(204).send();
     } catch (e) {

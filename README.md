@@ -26,26 +26,28 @@ Starts the server in production mode.
 ```
 
 ## Routes 
-#### GET "/"
+#### GET "/docs"
     Returns all document objects in an array.
     
 
-#### POST "/"
+#### POST "/docs"
     Insert a new document in the database.
     
     Returns the new document object including the new _id value.
     name is required but content is optional.
 
         
-#### PUT "/"
-    Updates the altered data of the document object sent in the request body.
-    _id cannot be altered and is required.
-    name or content or both can be included, but atleast one is required. The value of the properties passed in the body of the request will be the new values of the document object. If one is excluded its value will remain unchanged.
+#### PUT "/docs/:id"
+    Route param: _id of target document.
+
+    Updates the altered data of the properties in the object sent in the request body.
+    _id cannot be altered, and is used in the route to specify target document.
+
+    name or content or both can be included in the request body object, but atleast one is required. The value of the properties passed in the body of the request will be the new values of the document object. If one is excluded its value will remain unchanged.
     
-    Returns no data
+    Returns no data. Logs success in console.
 
 #### DELETE "/:id"
-    Parameter:
-        - _id of target document
+    Route param: _id of target document.
     
     Returns no data

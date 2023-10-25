@@ -3,7 +3,7 @@
  **            RESET DATABASE DATA
  *══════════════════════════════════════════════**/
  
-const database      = require("../db/docs.js");
+const database      = require("../db/database.js");
 const fs            = require("fs");
 const path          = require("path");
 const data          = JSON.parse(fs.readFileSync(

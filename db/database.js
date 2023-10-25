@@ -5,15 +5,14 @@
 
 "use strict";
 const mongo     = require("mongodb").MongoClient;
-const colName   = "docs";
 
 
 const database = {
-    getDb: async function getDb () {
-        let dsn = `mongodb+srv://${process.env.ATLAS_USERNAME}:${process.env.ATLAS_PASSWORD}@jsramverk.hhuinjd.mongodb.net/docsDB?retryWrites=true&w=majority`;
+    getDb: async function getDb (colName="docs") {
+        let dsn = `mongodb+srv://texteditor:${process.env.ATLAS_PASSWORD}@jsramverk.hhuinjd.mongodb.net/docsDB?retryWrites=true&w=majority`;
 
         if (process.env.NODE_ENV === 'test') {
-            dsn = "mongodb://localhost:27017/test";
+            dsn = "mongodb://127.0.0.1:27017/test";
         }
 
         const client  = await mongo.connect(dsn);
@@ -21,6 +20,7 @@ const database = {
         const collection = await db.collection(colName);
 
         return {
+            db: db,
             collection: collection,
             client: client,
         };

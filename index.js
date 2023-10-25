@@ -23,12 +23,18 @@ app.use(express.json());
 
 // ─── Routes And Port Connection ─────────────────────
 
-app.use('/', routeDocs);
+app.get("/", (req, res) => res.json({message: "JS-Editor docs API"}));
 
-app.listen(port, middleware.logStartUpInfo(port));
+app.use('/docs', routeDocs);
+
+const server = app.listen(port, middleware.logStartUpInfo(port));
 
 
-// ─── Error Handling ──────────────────────────────────
+// ─── Error Handling ─────────────────────────────────
 
 app.use(middleware.catch404);
 app.use(middleware.handleError);
+
+// ────────────────────────────────────────────────────
+
+module.exports = server;
