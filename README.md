@@ -6,6 +6,9 @@ Installs all necessary dependencies.
 ### npm start
 Starts the server.
 
+### npm test
+Runs all tests.
+
 ### npm run reset
 Resets database with data from db/data.json file.
 
