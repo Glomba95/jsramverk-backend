@@ -5,17 +5,17 @@
 
 "use strict";
 
-const express   = require("express");
-const morgan    = require("morgan");
+// const express   = require("express");
+const morgan = require("morgan");
 
 
 // ─── Logging ───────────────────────────────────────────────
 
 // Writes logs to command line while not in test-mode
 function manageLogging(app, req, res, next) {
-    if (process.env.NODE_ENV !== 'test' ){
+    if (process.env.NODE_ENV !== 'test') {
         // 'combined' sets Apache style logs
-        app.use(morgan('combined')); 
+        app.use(morgan('combined'));
     }
 }
 
@@ -37,7 +37,7 @@ function logStartUpInfo(port) {
 function catch404(req, res, next) {
     var err = new Error("Not Found");
     err.status = 404;
-    
+
     next(err);
 }
 
@@ -46,15 +46,15 @@ function handleError(err, req, res, next) {
         return next(err);
     }
 
-    res.status(err.status || 500).json({      
+    res.status(err.status || 500).json({
         "errors": [
             {
                 "status": err.status,
-                "title":  err.message,
+                "title": err.message,
                 "detail": err.message
             }
         ]
-    });   
+    });
 }
 
 // ───────────────────────────────────────────────────────────

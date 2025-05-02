@@ -2,16 +2,18 @@
  **                    ENTRY POINT
  *════════════════════════════════════════════════════**/
 
-"use strict";
-
-const express       = require("express");
-const cors          = require("cors");
-const app           = express();
-const middleware    = require("./middleware/index.js");
-const routeDocs     = require("./route/docs.js");
-const port          = process.env.PORT || 1337;
-
 require('dotenv').config();
+
+const express = require("express");
+const middleware = require("./middleware/index.js");
+const cors = require("cors");
+
+const routeDocs = require("./route/docs.js");
+
+const app = express();
+const httpServer = require("http").createServer(app);
+
+const port = process.env.PORT || 1337;
 
 
 // ─── Middleware ─────────────────────────────────────
@@ -21,20 +23,46 @@ middleware.manageLogging(app);
 app.use(express.json());
 
 
-// ─── Routes And Port Connection ─────────────────────
+// ─── Routes and Connections ─────────────────────
 
 app.get("/", (req, res) => res.redirect("/docs"));
 
 app.use("/docs", routeDocs);
 
-const server = app.listen(port, middleware.logStartUpInfo(port));
+// Setup server
+const io = require("socket.io")(httpServer, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
+// Eventlistener catches client request. Connection established!
+io.sockets.on('connection', (socket) => {
+    // Log socket id
+    console.log("\nA user connected. Socket ID: ", socket.id);
+
+    // Room created or joined
+    socket.on('create', (room) => {
+        socket.join(room);
+        console.log("\nRoom joined: ", room);
+    });
+
+    socket.on("doc", function (data) {
+        console.log("Server recieved and forwards: ", data.content)
+        socket.to(data["_id"]).emit("doc", data);
+    });
 
 
-// ─── Error Handling ─────────────────────────────────
+    const server = httpServer.listen(port, middleware.logStartUpInfo(port));
 
-app.use(middleware.catch404);
-app.use(middleware.handleError);
 
-// ────────────────────────────────────────────────────
+    // ─── Error Handling ─────────────────────────────────
 
-module.exports = server;
+    app.use(middleware.catch404);
+    app.use(middleware.handleError);
+
+    // ────────────────────────────────────────────────────
+
+    module.exports = server;
+})
