@@ -7,6 +7,7 @@
 
 // const express   = require("express");
 const morgan = require("morgan");
+const jwt = require('jsonwebtoken');
 
 
 // ─── Logging ───────────────────────────────────────────────
@@ -31,6 +32,23 @@ function logStartUpInfo(port) {
     console.log(`DSN is: ${dsn}`);
 }
 
+// ─── Verify Jwt ──────────────────────────────────────────────────────────────
+
+function checkToken(req, res, next) {
+    const token = req.headers['x-access-token'];
+    if (!token) {
+        return res.status(401).json({ error: "No token provided" });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ error: "Invalid token" });
+        }
+
+        req.user = decoded; // Lägg till användardata till request
+        next();
+    });
+}
 
 // ─── Error Handling ────────────────────────────────────────
 
@@ -62,6 +80,7 @@ function handleError(err, req, res, next) {
 module.exports = {
     manageLogging: manageLogging,
     logStartUpInfo: logStartUpInfo,
+    checkToken: checkToken,
     catch404: catch404,
     handleError: handleError
 };

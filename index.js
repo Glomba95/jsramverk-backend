@@ -9,6 +9,7 @@ const middleware = require("./middleware/index.js");
 const cors = require("cors");
 
 const routeDocs = require("./route/docs.js");
+const routeAuth = require("./route/auth.js");
 
 const app = express();
 const httpServer = require("http").createServer(app);
@@ -25,9 +26,13 @@ app.use(express.json());
 
 // ─── Routes and Connections ─────────────────────
 
-app.get("/", (req, res) => res.redirect("/docs"));
+// app.get("/", (req, res) => res.redirect("/docs"));
+app.get("/", (req, res) => res.json({ message: "JS-Editor docs API" }));
+
 
 app.use("/docs", routeDocs);
+
+app.use("/auth", routeAuth);
 
 // Setup server
 const io = require("socket.io")(httpServer, {
@@ -52,17 +57,17 @@ io.sockets.on('connection', (socket) => {
         console.log("Server recieved and forwards: ", data.content)
         socket.to(data["_id"]).emit("doc", data);
     });
+});
 
 
-    const server = httpServer.listen(port, middleware.logStartUpInfo(port));
+const server = httpServer.listen(port, middleware.logStartUpInfo(port));
 
 
-    // ─── Error Handling ─────────────────────────────────
+// ─── Error Handling ─────────────────────────────────
 
-    app.use(middleware.catch404);
-    app.use(middleware.handleError);
+app.use(middleware.catch404);
+app.use(middleware.handleError);
 
-    // ────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────
 
-    module.exports = server;
-})
+module.exports = server;

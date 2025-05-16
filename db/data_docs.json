@@ -1,0 +1,22 @@
+[
+    {
+        "name": "Namn1",
+        "content": "<div><!--block-->cont 1</div>",
+        "owner": "user1"
+    },
+    {
+        "name": "Namn2",
+        "content": "<div><!--block-->cont 2</div>",
+        "owner": "user1"
+    },
+    {
+        "name": "Namn3",
+        "content": "<div><!--block-->cont 3</div>",
+        "owner": "usernameTwo"
+    },
+    {
+        "name": "Namn4",
+        "content": "<div><!--block-->cont 4</div>",
+        "owner": "myUser3"
+    }
+]
