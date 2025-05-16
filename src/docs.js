@@ -1,23 +1,23 @@
 
 /**═════════════════════════════════════════════
- **             DATABASE CONTROLLER
+ **             DOCS DB CONTROLLER
  *══════════════════════════════════════════════**/
- 
+
 "use strict";
 
-const   ObjectId      = require("mongodb").ObjectId;
-const   database      = require("../db/database.js");
-let     db;
+const ObjectId = require("mongodb").ObjectId;
+const database = require("../db/database.js");
+let db;
 
 
 // ─── Execute ──────────────────────────────────────────────────────
 
-async function execute(action, data=null) {
+async function execute(action, data = null) {
     try {
         db = await database.getDb();
         let result;
-        
-        switch(action) {
+
+        switch (action) {
             case 'read':
                 result = await readDocs();
                 return result;
@@ -43,7 +43,7 @@ async function execute(action, data=null) {
 
 async function readDocs() {
     const res = await db.collection.find({}).toArray();
-    
+
     return res;
 }
 
@@ -52,7 +52,7 @@ async function readDocs() {
 
 async function createDoc(document) {
     const res = await db.collection.insertOne(document);
-    
+
     return {
         ...document,
         _id: res.insertedId,
@@ -64,7 +64,7 @@ async function createDoc(document) {
 
 async function updateDoc(id, doc) {
     let data = {};
-    
+
     if (doc.name) {
         data["name"] = doc.name;
     }
@@ -73,10 +73,10 @@ async function updateDoc(id, doc) {
     }
 
     const res = await db.collection.updateOne(
-        { _id: new ObjectId(id) }, 
+        { _id: new ObjectId(id) },
         { $set: data }
     );
-    
+
     if (res.matchedCount === 1) {
         console.log("Successfully updated one document.");
     } else {
@@ -102,4 +102,4 @@ async function deleteDoc(id) {
 
 // ──────────────────────────────────────────────────────────────────
 
-module.exports = {execute: execute};
+module.exports = { execute: execute };
