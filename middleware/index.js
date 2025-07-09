@@ -46,6 +46,7 @@ function checkToken(req, res, next) {
         }
 
         req.user = decoded; // Lägg till användardata till request
+        console.log("Token verified for user:", req.user.username);
         next();
     });
 }

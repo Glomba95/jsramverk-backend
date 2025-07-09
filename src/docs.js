@@ -12,23 +12,23 @@ let db;
 
 // ─── Execute ──────────────────────────────────────────────────────
 
-async function execute(action, data = null) {
+async function execute(action, username = null, data = null) {
     try {
-        db = await database.getDb();
+        db = await database.getDb("docs");
         let result;
 
         switch (action) {
             case 'read':
-                result = await readDocs();
+                result = await readDocs(username);
                 return result;
             case 'create':
                 result = await createDoc(data);
                 return result;
             case 'update':
-                await updateDoc(data[0], data[1]);
+                await updateDoc(username, data[0], data[1]);
                 break;
             case 'delete':
-                await deleteDoc(data);
+                await deleteDoc(username, data);
                 break;
         }
     } catch (e) {
@@ -39,10 +39,24 @@ async function execute(action, data = null) {
 }
 
 
+// ─── Get Owner ────────────────────────────────────────────────────
+
+async function getDocOwner(id) {
+    const document = await db.collection.findOne(
+        { _id: new ObjectId(id) },
+        // Dont include id in res
+        { projection: { owner: 1, _id: 0 } }
+    );
+
+    // Return owner or null if not found
+    return document?.owner || null;
+}
+
+
 // ─── Get All ──────────────────────────────────────────────────────
 
-async function readDocs() {
-    const res = await db.collection.find({}).toArray();
+async function readDocs(username) {
+    const res = await db.collection.find({ owner: username }).toArray();
 
     return res;
 }
@@ -62,7 +76,20 @@ async function createDoc(document) {
 
 // ─── Update ───────────────────────────────────────────────────────
 
-async function updateDoc(id, doc) {
+async function updateDoc(username, docId, doc) {
+    // Find doc and get owner in db
+    const docOwner = await getDocOwner(docId);
+
+    // Check document exist and verify acting user is its owner
+    if (!docOwner) {
+        console.log("No documents matched the query. Updated 0 documents.");
+        throw Error("No document match found");
+    } else if (docOwner !== username) {
+        console.log("Forbidden: Not authorized to edit resources owned by another user.");
+        throw Error("You do not have permission to edit this item. Only the owner can perform this action.")
+    }
+
+
     let data = {};
 
     if (doc.name) {
@@ -72,30 +99,45 @@ async function updateDoc(id, doc) {
         data["content"] = doc.content;
     }
 
+    // Update document in db with new data
     const res = await db.collection.updateOne(
-        { _id: new ObjectId(id) },
+        { _id: new ObjectId(docId) },
         { $set: data }
     );
 
+    // Throw error if not successful
     if (res.matchedCount === 1) {
         console.log("Successfully updated one document.");
     } else {
-        console.log("No documents matched the query. Updated 0 documents.");
-        throw Error("No document match found");
+        throw Error("Database error");
     }
 }
 
 
 // ─── Delete ───────────────────────────────────────────────────────
 
-async function deleteDoc(id) {
-    const res = await db.collection.deleteOne({ _id: new ObjectId(id) });
+async function deleteDoc(username, docId) {
+    // Find doc in db
+    const docOwner = getDocOwner(docId);
 
+    // Check acting user is owner of doc
+    if (!docOwner) {
+        console.log("No documents matched the query. Deleted 0 documents.");
+        throw Error("No document match found");
+    } else if (docOwner !== username) {
+        console.log("Forbidden: Not authorized to delete resources owned by another user.");
+        throw Error("You do not have permission to delete this item. Only the owner can perform this action.")
+    }
+
+    // Delete doc from db
+    const res = await db.collection.deleteOne({ _id: new ObjectId(docId) });
+
+    // Throw error if not successful
     if (res.deletedCount === 1) {
         console.log("Successfully deleted one document.");
     } else {
-        console.log("No documents matched the query. Deleted 0 documents.");
-        throw Error("No document match found");
+        console.log("Database error.");
+        throw Error("Database error");
     }
 }
 

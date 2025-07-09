@@ -20,9 +20,11 @@ router.get("/",
     middleware.checkToken,
     async (req, res) => {
         try {
-            const data = await docs.execute('read');
+            const username = req.user.username;
 
-            res.json(data);
+            const data = await docs.execute('read', username, null);
+
+            res.status(200).json(data);
         } catch (e) {
             return writeError(req.method, res, e);
         }
@@ -36,7 +38,8 @@ router.post("/",
     async (req, res) => {
         try {
             const doc = req.body;
-            const result = await docs.execute('create', doc);
+            doc["owner"] = req.user.username;
+            const result = await docs.execute('create', null, doc);
 
             res.status(201).send(result);
         } catch (e) {
@@ -51,10 +54,11 @@ router.put("/:id",
     middleware.checkToken,
     async (req, res) => {
         try {
-            const id = req.params.id;
+            const username = req.user.username;
+            const docId = req.params.id;
             const document = req.body;
 
-            await docs.execute('update', [id, document]);
+            await docs.execute('update', username, [docId, document]);
 
             res.status(204).send();
         } catch (e) {
@@ -67,10 +71,12 @@ router.put("/:id",
 
 router.delete("/:id",
     middleware.checkToken,
+
     async (req, res) => {
         try {
-            const id = req.params.id;
-            await docs.execute('delete', id);
+            const username = req.user.username;
+            const docId = req.params.id;
+            await docs.execute('delete', username, docId);
 
             res.status(204).send();
         } catch (e) {

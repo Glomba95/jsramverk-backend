@@ -9,7 +9,8 @@
         "reset": "node db/reset.js",
         "production": "NODE_ENV='production' node index.js",
         "test": "nyc --reporter=html --reporter=text --reporter=clover mocha --timeout 10000",
-        "clean": "rm -rf node_modules package-lock.json"
+        "clean": "rm -rf node_modules package-lock.json",
+        "tmptest": "node test/mytestfile.js"
     },
     "author": "Ebba Amnehagen",
     "license": "ISC",
@@ -31,6 +32,7 @@
     },
     "optionalDependencies": {
         "bufferutil": "^4.0.8",
+        "nodemon": "^3.1.10",
         "utf-8-validate": "^5.0.10"
     }
 }

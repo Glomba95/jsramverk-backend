@@ -4,6 +4,7 @@
  *══════════════════════════════════════════════**/
 
 const database = require("./database.js");
+const auth = require("../src/auth.js");
 const fs = require("fs");
 const path = require("path");
 const usersData = JSON.parse(fs.readFileSync(
@@ -15,6 +16,7 @@ const docsData = JSON.parse(fs.readFileSync(
     "utf8"
 ));
 
+
 require('dotenv').config();
 let db;
 
@@ -22,7 +24,13 @@ async function resetCollection(colName, data) {
     try {
         db = await database.getDb(colName);
         await db.collection.deleteMany();
-        await db.collection.insertMany(data);
+        if (colName == "docs") {
+            await db.collection.insertMany(data);
+        } else {
+            for (const user of data) {
+                await auth.execute("register", user);
+            }
+        }
         console.log(`${colName} collection is reset`);
     } catch (e) {
         console.log(`Could not reset ${colName} collection`);
