@@ -30,6 +30,9 @@ async function execute(action, username = null, data = null) {
             case 'delete':
                 await deleteDoc(username, data);
                 break;
+            case 'share':
+                result = await shareDoc(username, data[0], data[1]);
+                return result;
         }
     } catch (e) {
         throw e;
@@ -53,10 +56,29 @@ async function getDocOwner(id) {
 }
 
 
+// ─── Get Shared With ────────────────────────────────────────────────────
+
+async function getSharedWith(id) {
+    const document = await db.collection.findOne(
+        { _id: new ObjectId(id) },
+        // Dont include id in res
+        { projection: { sharedWith: 1, _id: 0 } }
+    );
+
+    // Return sharedWith list or empty if not found
+    return document?.sharedWith || [];
+}
+
+
 // ─── Get All ──────────────────────────────────────────────────────
 
 async function readDocs(username) {
-    const res = await db.collection.find({ owner: username }).toArray();
+    const res = await db.collection.find({
+        $or: [
+            { owner: username },
+            { sharedWith: username }
+        ]
+    }).toArray();
 
     return res;
 }
@@ -79,14 +101,20 @@ async function createDoc(document) {
 async function updateDoc(username, docId, doc) {
     // Find doc and get owner in db
     const docOwner = await getDocOwner(docId);
+    const sharedWithList = await getSharedWith(docId);
 
-    // Check document exist and verify acting user is its owner
+    // Check document exists
     if (!docOwner) {
         console.log("No documents matched the query. Updated 0 documents.");
         throw Error("No document match found");
-    } else if (docOwner !== username) {
-        console.log("Forbidden: Not authorized to edit resources owned by another user.");
-        throw Error("You do not have permission to edit this item. Only the owner can perform this action.")
+    }
+
+    // Check user is authorized to edit
+    const authorized = (docOwner === username || sharedWithList.includes(username));
+
+    if (!authorized) {
+        console.log("Forbidden: Not authorized to edit this document");
+        throw Error("You do not have permission to edit this item.")
     }
 
 
@@ -118,7 +146,7 @@ async function updateDoc(username, docId, doc) {
 
 async function deleteDoc(username, docId) {
     // Find doc in db
-    const docOwner = getDocOwner(docId);
+    const docOwner = await getDocOwner(docId);
 
     // Check acting user is owner of doc
     if (!docOwner) {
@@ -138,6 +166,62 @@ async function deleteDoc(username, docId) {
     } else {
         console.log("Database error.");
         throw Error("Database error");
+    }
+}
+
+
+// ─── Share ───────────────────────────────────────────────────────
+
+async function shareDoc(username, docId, shareUsername) {
+    // Find doc in db
+    const docOwner = await getDocOwner(docId);
+
+    // Check document exists
+    if (!docOwner) {
+        return {
+            success: false,
+            message: "No document match found"
+        }
+    }
+
+    // Check acting user is owner of doc
+    if (docOwner !== username) {
+        return {
+            success: false,
+            message: "You do not have permission to share this item. Only the owner can perform this action."
+        }
+    }
+
+    let sharedWithList = await getSharedWith(docId);
+    let sharedWithStr;
+
+    if (sharedWithList.includes(shareUsername)) {
+        sharedWithStr = sharedWithList.join(", ");
+
+        return {
+            success: false,
+            message: `Document already shared with users: ${sharedWithStr}`
+        }
+    } else {
+        const res = await db.collection.updateOne(
+            { _id: new ObjectId(docId) },
+            { $addToSet: { sharedWith: shareUsername } }
+        );
+
+        sharedWithList = await getSharedWith(docId);
+        sharedWithStr = sharedWithList.join(", ");
+
+        if (res.modifiedCount === 1) {
+            return {
+                success: true,
+                message: `This document is now shared with users: ${sharedWithStr}`
+            }
+        } else {
+            return {
+                success: false,
+                message: `Something went wrong. Document is currently shared with users: ${sharedWithStr}`
+            }
+        }
     }
 }
 

@@ -39,6 +39,7 @@ router.post("/",
         try {
             const doc = req.body;
             doc["owner"] = req.user.username;
+            doc["sharedWith"] = [];
             const result = await docs.execute('create', null, doc);
 
             res.status(201).send(result);
@@ -79,6 +80,30 @@ router.delete("/:id",
             await docs.execute('delete', username, docId);
 
             res.status(204).send();
+        } catch (e) {
+            return writeError(req.method, res, e);
+        }
+    });
+
+
+// PUT ─── Share ─────────────────────────────────────────
+
+router.put("/share/:id",
+    middleware.checkToken,
+
+    async (req, res) => {
+        try {
+            const username = req.user.username;
+            const docId = req.params.id;
+            const shareUsername = req.body.username;
+
+            const data = await docs.execute('share', username, [docId, shareUsername]);
+
+            // Returns obj wth success: bool and
+            // message: str
+            console.log("route docs share data: \n");
+            console.log(data);
+            return res.status(200).json(data);
         } catch (e) {
             return writeError(req.method, res, e);
         }

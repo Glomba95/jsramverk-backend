@@ -4,11 +4,11 @@
         "password": "pass1"
     },
     {
-        "username": "usernameTwo",
-        "password": "passwordTwo"
+        "username": "user2",
+        "password": "pass2"
     },
     {
-        "username": "myUser3",
-        "password": "myPassword3"
+        "username": "user3",
+        "password": "pass3"
     }
 ]

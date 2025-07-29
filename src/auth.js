@@ -26,6 +26,9 @@ async function execute(action, data = null) {
             case 'list':
                 result = await getAll();
                 return result;
+            case 'verify':
+                result = await checkUser(data);
+                return result;
             case 'register':
                 result = await register(data);
                 return result;
@@ -53,11 +56,19 @@ async function getAll() {
 
 // ─── Get one ──────────────────────────────────────────────────────
 
-async function findUser(username) {
+async function checkUser(username) {
+    console.log("src auth username: ");
+    console.log(username);
     const exists = await db.collection.findOne({ username: username });
+
+    console.log("src auth user exists: ");
+    console.log(exists);
+
     if (exists) {
+        console.log(exists);
         return exists;
     } else {
+        console.log("false");
         return false;
     }
 }
@@ -79,7 +90,7 @@ async function findUser(username) {
 
 async function register(user) {
 
-    const existingUser = await findUser(user.username);
+    const existingUser = await checkUser(user.username);
     if (existingUser) {
         return { success: false, errorType: "username", message: "User already exists." };
     }
@@ -115,7 +126,7 @@ async function register(user) {
 
 
 async function login(user) {
-    const dbUser = await findUser(user.username);
+    const dbUser = await checkUser(user.username);
 
     if (!dbUser) {
         return { success: false, errorType: 'username', message: `No record of user with username: ${user.username}` };

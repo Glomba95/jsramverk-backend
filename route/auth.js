@@ -59,6 +59,24 @@ router.post("/login", async (req, res) => {
     }
 });
 
+
+// POST ─── Verify user ───────────────────────────────────
+
+router.post("/verifyuser", async (req, res) => {
+    try {
+        const username = req.body.username;
+
+        const result = await auth.execute('verify', username);
+
+        // Returns user if registred or false 
+        return res.status(200).send(result);
+    } catch (e) {
+        return writeError(req.method, res, e);
+    }
+
+})
+
+
 // ─── Error Handler ──────────────────────────────────────
 
 function writeError(method, res, e) {
