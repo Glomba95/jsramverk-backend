@@ -34,22 +34,20 @@ function logStartUpInfo(port) {
 
 // ─── Verify Jwt ──────────────────────────────────────────────────────────────
 
-function checkToken(req, res, next) {
+async function verifyToken(req) {
     const token = req.headers['x-access-token'];
     if (!token) {
-        return res.status(401).json({ error: "No token provided" });
+        throw new Error("No token provided");
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ error: "Invalid token" });
-        }
+    try {
+        const decoded = await jwt.verify(token, process.env.JWT_SECRET);
 
-        req.user = decoded; // Lägg till användardata till request
-        console.log("Token verified for user:", req.user.username);
-        next();
-    });
-}
+        return decoded;
+    } catch (err) {
+        throw new Error("Invalid token");
+    }
+};
 
 // ─── Error Handling ────────────────────────────────────────
 
@@ -81,7 +79,7 @@ function handleError(err, req, res, next) {
 module.exports = {
     manageLogging: manageLogging,
     logStartUpInfo: logStartUpInfo,
-    checkToken: checkToken,
+    verifyToken: verifyToken,
     catch404: catch404,
     handleError: handleError
 };

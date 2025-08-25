@@ -89,6 +89,7 @@ async function readDocs(username) {
 async function createDoc(document) {
     const res = await db.collection.insertOne(document);
 
+    // REVIEW behövs någon return? Ingen behövs i CreateDocForm 
     return {
         ...document,
         _id: res.insertedId,
@@ -116,7 +117,6 @@ async function updateDoc(username, docId, doc) {
         console.log("Forbidden: Not authorized to edit this document");
         throw Error("You do not have permission to edit this item.")
     }
-
 
     let data = {};
 
@@ -193,33 +193,29 @@ async function shareDoc(username, docId, shareUsername) {
     }
 
     let sharedWithList = await getSharedWith(docId);
-    let sharedWithStr;
 
     if (sharedWithList.includes(shareUsername)) {
-        sharedWithStr = sharedWithList.join(", ");
 
         return {
             success: false,
-            message: `Document already shared with users: ${sharedWithStr}`
+            message: `Document already shared with ${shareUsername}.`
         }
     } else {
+        // REVIEW Möjligt att slå ihop uppdateringen till en atomisk operation i MongoDB (findOneAndUpdate med $addToSet), vilket gör att slipper flera separata anrop för att kolla om användaren redan finns i listan.
         const res = await db.collection.updateOne(
             { _id: new ObjectId(docId) },
             { $addToSet: { sharedWith: shareUsername } }
         );
 
-        sharedWithList = await getSharedWith(docId);
-        sharedWithStr = sharedWithList.join(", ");
-
         if (res.modifiedCount === 1) {
             return {
                 success: true,
-                message: `This document is now shared with users: ${sharedWithStr}`
+                message: `Successfully shared document with ${shareUsername}.`
             }
         } else {
             return {
                 success: false,
-                message: `Something went wrong. Document is currently shared with users: ${sharedWithStr}`
+                message: `Something went wrong.`
             }
         }
     }

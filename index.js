@@ -8,13 +8,22 @@ const express = require("express");
 const middleware = require("./middleware/index.js");
 const cors = require("cors");
 
-const routeDocs = require("./route/docs.js");
-const routeAuth = require("./route/auth.js");
+const { graphqlHTTP } = require('express-graphql');
+const { GraphQLSchema } = require("graphql");
+
+const RootQueryType = require("./graphql/root.js");
+const RootMutationType = require("./graphql/mutation.js")
 
 const app = express();
 const httpServer = require("http").createServer(app);
 
 const port = process.env.PORT || 1337;
+
+const schema = new GraphQLSchema({
+    query: RootQueryType,
+    mutation: RootMutationType,
+});
+
 
 
 // ─── Middleware ─────────────────────────────────────
@@ -26,15 +35,16 @@ app.use(express.json());
 
 // ─── Routes and Connections ─────────────────────
 
-// app.get("/", (req, res) => res.redirect("/docs"));
-app.get("/", (req, res) => res.json({ message: "JS-Editor docs API" }));
+app.use('/graphql', graphqlHTTP((req, res) => ({
+    schema: schema,
+    context: { req, res },
+    graphiql: false, // NOTE Visual är satt till true under utveckling, byt till false innan produktion
+})));
 
 
-app.use("/docs", routeDocs);
 
-app.use("/auth", routeAuth);
+// ─── Setup Server ────────────────────────────────────────────────────
 
-// Setup server
 const io = require("socket.io")(httpServer, {
     cors: {
         origin: "*",
@@ -42,7 +52,8 @@ const io = require("socket.io")(httpServer, {
     }
 });
 
-// Eventlistener catches client request. Connection established!
+// Eventlistener catches client request. 
+// Connection established!
 io.sockets.on('connection', (socket) => {
     // Log socket id
     console.log("\nA user connected. Socket ID: ", socket.id);

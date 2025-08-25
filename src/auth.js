@@ -56,19 +56,12 @@ async function getAll() {
 
 // ─── Get one ──────────────────────────────────────────────────────
 
-async function checkUser(username) {
-    console.log("src auth username: ");
-    console.log(username);
-    const exists = await db.collection.findOne({ username: username });
+async function checkUser(username, returnUser = false) {
+    const user = await db.collection.findOne({ username: username });
 
-    console.log("src auth user exists: ");
-    console.log(exists);
-
-    if (exists) {
-        console.log(exists);
-        return exists;
+    if (user) {
+        return returnUser ? user : true;
     } else {
-        console.log("false");
         return false;
     }
 }
@@ -84,7 +77,7 @@ async function checkUser(username) {
 *@param {Object} user - An object containing username and password.
 *
 *@return {Object} - An object with success status (bool)
-*        and an optional error message (str) if registration fails.
+*        and error message (str) if registration fails.
 **/
 // ─────────────────────────────────────────────────────────────────────
 
@@ -126,20 +119,20 @@ async function register(user) {
 
 
 async function login(user) {
-    const dbUser = await checkUser(user.username);
+    const existingUser = await checkUser(user.username, true);
 
-    if (!dbUser) {
+    if (!existingUser) {
         return { success: false, errorType: 'username', message: `No record of user with username: ${user.username}` };
     }
 
-    const correctPassword = await bcrypt.compare(user.password, dbUser.password);
+    const correctPassword = await bcrypt.compare(user.password, existingUser.password);
 
     if (!correctPassword) {
         return { success: false, errorType: 'password', message: "Incorrect password" };
     }
 
     const payload = {
-        username: dbUser.username, _id: dbUser._id
+        username: existingUser.username, _id: existingUser._id
     };
 
     const token = jwt.sign(payload, jwtSecret, { expiresIn: '1h' });
