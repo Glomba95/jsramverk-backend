@@ -1,24 +1,27 @@
 [
     {
-        "name": "Namn1",
+        "title": "Title1",
         "content": "<div><!--block-->cont 1</div>",
         "owner": "user1",
-        "sharedWith": []
+        "sharedWith": [
+            "user2",
+            "user3"
+        ]
     },
     {
-        "name": "Namn2",
+        "title": "Title2",
         "content": "<div><!--block-->cont 2</div>",
         "owner": "user1",
         "sharedWith": []
     },
     {
-        "name": "Namn3",
+        "title": "Title3",
         "content": "<div><!--block-->cont 3</div>",
         "owner": "user2",
         "sharedWith": []
     },
     {
-        "name": "Namn4",
+        "title": "Title4",
         "content": "<div><!--block-->cont 4</div>",
         "owner": "user2",
         "sharedWith": []

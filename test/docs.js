@@ -36,7 +36,7 @@ describe('Docs', () => {
 
 
     // ─── Test GET Route ──────────────────────────────
-    
+
     describe('GET /docs', () => {
         it('it should GET all documents', (done) => {
             chai.request(server)
@@ -46,17 +46,17 @@ describe('Docs', () => {
                     res.body.should.be.an("array");
                     res.body.length.should.be.equal(0);
 
-                  done();
+                    done();
                 });
         });
     });
-    
+
     // ─── Test POST Route ─────────────────────────────
 
     describe('POST /docs', () => {
         it('it should POST a new document', (done) => {
             let document = {
-                name: "Document name",
+                title: "Document title",
                 content: "Document content"
             };
 
@@ -67,9 +67,9 @@ describe('Docs', () => {
                     res.should.have.status(201);
                     res.body.should.be.an("object");
                     res.body.should.have.property("_id");
-                    res.body.should.have.property("name");
+                    res.body.should.have.property("title");
                     res.body.should.have.property("content");
-                    res.body.name.should.equal("Document name");
+                    res.body.title.should.equal("Document title");
 
                     done();
                 });
@@ -87,53 +87,53 @@ describe('Docs', () => {
                 });
         });
     });
-    
-describe('PUT/:id /docs', () => {
-	it('it should GET all documents', (done) => {
-        chai.request(server)
-            .get("/docs")
-            .end((err, res) => {
-                res.should.have.status(200);
-                res.body.should.be.an("array");
-                res.body.length.should.be.equal(1);
 
-                done();
-            });
-    });
-	
-	it('it should UPDATE a document given the id', (done) => {
-	    chai.request(server)
-	        .get("/docs")
-            .end((err, res) => {
-	            let ogDocument = res.body[0];
-	
-        	    let document = {
-                    name: "New Name",
-                    content: "New Content"
-                };
-                
-        		chai.request(server)
-        		    .put('/docs/' + ogDocument._id)
-        			.send(document)
-        			.end((err, res) => {
-        			  	res.should.have.status(204);
-        			  	
-                        chai.request(server)
-                            .get("/docs")
-                            .end((err, res) => {
-                                res.should.have.status(200);
-                    
-                                let resDoc = res.body[0];
-                                
-                                resDoc.should.have.property("_id");
-                                resDoc._id.should.be.equal(ogDocument._id);
-                                resDoc.should.have.property("name");
-                                resDoc.name.should.not.equal(ogDocument.name);
-                                resDoc.name.should.be.equal(document.name)
-                            });
-        		    });
-                done();
-            });
-	    });
+    describe('PUT/:id /docs', () => {
+        it('it should GET all documents', (done) => {
+            chai.request(server)
+                .get("/docs")
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.body.should.be.an("array");
+                    res.body.length.should.be.equal(1);
+
+                    done();
+                });
+        });
+
+        it('it should UPDATE a document given the id', (done) => {
+            chai.request(server)
+                .get("/docs")
+                .end((err, res) => {
+                    let ogDocument = res.body[0];
+
+                    let document = {
+                        title: "New Title",
+                        content: "New Content"
+                    };
+
+                    chai.request(server)
+                        .put('/docs/' + ogDocument._id)
+                        .send(document)
+                        .end((err, res) => {
+                            res.should.have.status(204);
+
+                            chai.request(server)
+                                .get("/docs")
+                                .end((err, res) => {
+                                    res.should.have.status(200);
+
+                                    let resDoc = res.body[0];
+
+                                    resDoc.should.have.property("_id");
+                                    resDoc._id.should.be.equal(ogDocument._id);
+                                    resDoc.should.have.property("title");
+                                    resDoc.title.should.not.equal(ogDocument.title);
+                                    resDoc.title.should.be.equal(document.title)
+                                });
+                        });
+                    done();
+                });
+        });
     });
 });

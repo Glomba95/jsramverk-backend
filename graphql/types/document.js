@@ -11,7 +11,7 @@ const DocumentType = new GraphQLObjectType({
     description: 'This represents a document',
     fields: () => ({
         _id: { type: GraphQLID },
-        name: { type: GraphQLNonNull(GraphQLString) },
+        title: { type: GraphQLNonNull(GraphQLString) },
         content: { type: GraphQLString },
         owner: { type: GraphQLNonNull(GraphQLString) },
         sharedWith: { type: GraphQLList(GraphQLString) }

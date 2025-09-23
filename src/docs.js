@@ -120,8 +120,8 @@ async function updateDoc(username, docId, doc) {
 
     let data = {};
 
-    if (doc.name) {
-        data["name"] = doc.name;
+    if (doc.title) {
+        data["name"] = doc.title;
     }
     if (doc.content) {
         data["content"] = doc.content;

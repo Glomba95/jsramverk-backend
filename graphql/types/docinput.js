@@ -8,7 +8,7 @@ const DocInputType = new GraphQLInputObjectType({
     name: 'DocInput',
     description: 'Input type for creating or updating a document',
     fields: () => ({
-        name: { type: new GraphQLNonNull(GraphQLString) },
+        title: { type: new GraphQLNonNull(GraphQLString) },
         content: { type: GraphQLString }
     })
 });
