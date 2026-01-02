@@ -5,7 +5,6 @@
 
 "use strict";
 
-// const express   = require("express");
 const morgan = require("morgan");
 const jwt = require('jsonwebtoken');
 
@@ -45,6 +44,7 @@ async function verifyToken(req) {
 
         return decoded;
     } catch (err) {
+        console.log("Invalid jwt token")
         throw new Error("Invalid token");
     }
 };

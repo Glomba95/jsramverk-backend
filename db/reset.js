@@ -20,13 +20,13 @@ const docsData = JSON.parse(fs.readFileSync(
 require('dotenv').config();
 let db;
 
-async function resetCollection(colName, data) {
+async function resetCollection(colName, data = null) {
     try {
         db = await database.getDb(colName);
         await db.collection.deleteMany();
         if (colName == "docs") {
             await db.collection.insertMany(data);
-        } else {
+        } else if (colName == "users") {
             for (const user of data) {
                 await auth.execute("register", user);
             }
@@ -43,6 +43,7 @@ async function resetCollection(colName, data) {
 async function resetDatabase() {
     await resetCollection("users", usersData);
     await resetCollection("docs", docsData);
+    await resetCollection("invites");
 }
 
 resetDatabase();

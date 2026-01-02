@@ -21,6 +21,9 @@ async function execute(action, username = null, data = null) {
             case 'read':
                 result = await readDocs(username);
                 return result;
+            case 'readOne':
+                result = await getDoc(data);
+                return result;
             case 'create':
                 result = await createDoc(data);
                 return result;
@@ -31,7 +34,7 @@ async function execute(action, username = null, data = null) {
                 await deleteDoc(username, data);
                 break;
             case 'share':
-                result = await shareDoc(username, data[0], data[1]);
+                result = await shareDoc(username, data[0], data[1], data[2]);
                 return result;
         }
     } catch (e) {
@@ -39,6 +42,21 @@ async function execute(action, username = null, data = null) {
     } finally {
         db.client.close();
     }
+}
+
+
+// ─── Get Doc ────────────────────────────────────────────────────
+
+async function getDoc(id) {
+    const document = await db.collection.findOne(
+        { _id: new ObjectId(id) },
+    );
+
+    if (document) {
+        return { success: true, doc: document };
+    }
+
+    return { success: false, message: "document not found in db" };
 }
 
 
@@ -121,7 +139,7 @@ async function updateDoc(username, docId, doc) {
     let data = {};
 
     if (doc.title) {
-        data["name"] = doc.title;
+        data["title"] = doc.title;
     }
     if (doc.content) {
         data["content"] = doc.content;
@@ -172,53 +190,62 @@ async function deleteDoc(username, docId) {
 
 // ─── Share ───────────────────────────────────────────────────────
 
-async function shareDoc(username, docId, shareUsername) {
-    // Find doc in db
-    const docOwner = await getDocOwner(docId);
+async function shareDoc(username, docId, shareUsername, invited = false) {
 
-    // Check document exists
-    if (!docOwner) {
-        return {
-            success: false,
-            message: "No document match found"
-        }
-    }
+    console.log(`src docs shareDoc:`);
+    if (!invited) {
+        // Find doc in db
+        const docOwner = await getDocOwner(docId);
 
-    // Check acting user is owner of doc
-    if (docOwner !== username) {
-        return {
-            success: false,
-            message: "You do not have permission to share this item. Only the owner can perform this action."
-        }
-    }
-
-    let sharedWithList = await getSharedWith(docId);
-
-    if (sharedWithList.includes(shareUsername)) {
-
-        return {
-            success: false,
-            message: `Document already shared with ${shareUsername}.`
-        }
-    } else {
-        // REVIEW Möjligt att slå ihop uppdateringen till en atomisk operation i MongoDB (findOneAndUpdate med $addToSet), vilket gör att slipper flera separata anrop för att kolla om användaren redan finns i listan.
-        const res = await db.collection.updateOne(
-            { _id: new ObjectId(docId) },
-            { $addToSet: { sharedWith: shareUsername } }
-        );
-
-        if (res.modifiedCount === 1) {
-            return {
-                success: true,
-                message: `Successfully shared document with ${shareUsername}.`
-            }
-        } else {
+        // Check document exists
+        if (!docOwner) {
             return {
                 success: false,
-                message: `Something went wrong.`
+                message: "No document match found"
+            }
+        }
+
+        // Check acting user is owner of doc
+        if (docOwner !== username) {
+            return {
+                success: false,
+                message: "You do not have permission to share this item. Only the owner can perform this action."
             }
         }
     }
+
+    const authFilter = invited ? {} : { owner: username };
+
+    const res = await db.collection.findOneAndUpdate(
+        {
+            _id: new ObjectId(docId),
+            ...authFilter,
+            sharedWith: { $ne: shareUsername }
+        },
+        {
+            $addToSet: { sharedWith: shareUsername }
+        },
+        { returnDocument: "after" }
+    );
+
+    if (res) {
+        console.log(`Successfully shared document with ${shareUsername}.`)
+        let response = {
+            success: true,
+            message: `Successfully shared document with ${shareUsername}.`
+        }
+
+        if (invited) {
+            response.doc = res;
+        }
+
+        return response;
+    }
+    console.log("No permission to share this document or document not found.");
+    return {
+        success: false,
+        message: "No permission to share this document or document not found."
+    };
 }
 
 

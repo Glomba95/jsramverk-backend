@@ -5,6 +5,7 @@ const {
     GraphQLString
 } = require('graphql');
 
+// REVIEW lägg till parameter code för att avläsa fel?
 const APIResponseType = new GraphQLObjectType({
     name: 'APIResponse',
     description: 'Standard API response',
